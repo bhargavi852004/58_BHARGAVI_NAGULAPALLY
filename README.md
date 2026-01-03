@@ -89,7 +89,7 @@ Answer + Citations
 - **FastAPI** – backend API
 - **Pinecone** – vector database
 - **Sentence-Transformers** – embeddings (offline-safe)
-- **Gemini / LLM API** – answer generation
+- **OpenAI / LLM API** – answer generation
 - **LangChain (conceptual RAG flow)**
 
 ### Data & Processing
@@ -183,7 +183,7 @@ Answer + Citations
 1. Load metadata
 2. Select 3–5 companies
 3. Download filings
-4. Chunk text (500–1000 tokens)
+4. Chunk text (800 tokens, 100overlaps)
 5. Generate embeddings
 6. Store vectors in Pinecone
 
