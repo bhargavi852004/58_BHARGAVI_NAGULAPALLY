@@ -8,9 +8,6 @@ load_dotenv()
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 INDEX_NAME = "finwiser-sec-rag"
 
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-INDEX_NAME = "finwiser-sec-rag"
-
 
 class PineconeVectorStore:
     def __init__(self, dimension: int = 384):
@@ -35,6 +32,10 @@ class PineconeVectorStore:
         self.index = pc.Index(INDEX_NAME)
 
     def upsert_chunks(self, chunks: List[Dict], embeddings: List[List[float]]):
+        """
+        Store ONLY embeddings + lightweight metadata in Pinecone.
+        DO NOT store raw text in metadata.
+        """
         vectors = []
 
         for chunk, embedding in zip(chunks, embeddings):
