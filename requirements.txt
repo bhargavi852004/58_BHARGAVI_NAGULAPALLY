@@ -10,3 +10,4 @@ torch
 langchain
 unstructured
 tqdm
+sentence-transformers>=2.2.2

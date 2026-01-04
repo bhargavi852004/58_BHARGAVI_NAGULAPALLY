@@ -1,52 +1,120 @@
-# FINWISER.AI — SEC Filing Summarizer & Q&A (RAG)
+# FINWISER.AI — SEC Filing Q&A (RAG)
 
 **Hackathon Track:** F7 – SEC Filing Summarizer & Q&A  
 **Team:** 58_BHARGAVI_NAGULAPALLY  
-**Repository Type:** Production-style AI system 
+**Repository Type:** Production-style AI system  
 
 ---
 
 ## 📌 Problem Statement (F7)
 
 **Problem:**  
-Query **SEC 10-K / 10-Q filings** and answer **investor-focused questions** with **clear source citations**.
+Enable users to query **SEC 10-K / 10-Q filings** and receive **investor-focused answers** that are:
+
+- Grounded strictly in filings  
+- Transparent with **source citations**  
+- Safe from hallucinations  
 
 **Dataset:**  
 SEC Filings – Kaggle  
+````
 https://www.kaggle.com/datasets/kharanshuvalangar/sec-filings
+````
 
 **Expected Outcome:**  
-- Index a **small, curated subset** of filings  
+- Index a **curated subset** of filings  
 - Implement `ask(question)`  
 - Return:
   - ✅ Grounded answer  
-  - ✅ Source citations (chunk IDs / filing references)  
-- Avoid hallucinations (safe refusal if answer not found)
+  - ✅ Chunk-level citations  
+- Refuse safely when data is unavailable  
 
 ---
 
 ## 🎯 Project Vision
 
-**FINWISER.AI** is a **production-grade Retrieval-Augmented Generation (RAG) system** that allows investors to:
+**FINWISER.AI** is a **Retrieval-Augmented Generation (RAG) system** designed for **accuracy, explainability, and trust** in financial Q&A.
 
-1. Select a company and filing type (10-K / 10-Q)
-2. Ask financial or risk-related questions
-3. Receive **fact-based answers grounded only in SEC filings**
-4. View **transparent citations** for every answer
+Instead of letting an LLM guess, FINWISER.AI:
+- Retrieves **relevant SEC filing chunks**
+- Generates answers **only from retrieved evidence**
+- Explicitly cites the filing sections used
 
-> This project focuses on **accuracy, explainability, and compliance**, not flashy demos.
+> This project prioritizes **correctness over creativity**, making it suitable for investor-facing use cases.
 
 ---
 
 ## 🚀 Key Features
 
-- ✅ SEC Filing ingestion & parsing
-- ✅ Chunk-level semantic search (RAG)
-- ✅ Pinecone vector database
-- ✅ FastAPI backend with `/ask` endpoint
-- ✅ Citation-backed answers
-- ✅ Safe refusal when data is missing
-- ✅ Optional Streamlit UI for demo
+- ✅ SEC filing ingestion & parsing  
+- ✅ Robust text chunking with overlap  
+- ✅ Semantic retrieval using Pinecone  
+- ✅ Sentence-Transformer embeddings  
+- ✅ FastAPI backend (`/ask` endpoint)  
+- ✅ Citation-backed answers  
+- ✅ Safe refusal when information is missing  
+- ✅ Streamlit UI for demo & evaluation  
+
+---
+## 🛡️ Guardrails & Safety Mechanisms (Core Strength)
+
+FINWISER.AI implements **explicit guardrails** to ensure reliability and prevent hallucinations.
+
+### 1️⃣ Retrieval-Only Answering
+- The LLM **never answers directly from its own knowledge**
+- All answers are generated **only from retrieved SEC filing chunks**
+- If no relevant chunks are retrieved, the system **refuses to answer**
+
+```text
+"Insufficient information found in the selected SEC filings."
+```
+
+---
+
+### 2️⃣ Mandatory Source Citations
+- Every answer is accompanied by **chunk-level citations**
+- Citations reference:
+  - Company ticker  
+  - Filing type (10-K / 10-Q)  
+  - Filing date  
+  - Chunk index  
+
+This guarantees **traceability and auditability** of responses.
+
+---
+
+### 3️⃣ Safe Refusal Policy
+The system explicitly refuses to answer if:
+- Retrieval confidence is too low  
+- Context does not contain the answer  
+- The question is out-of-scope  
+
+➡️ This prevents speculative or hallucinated responses.
+
+---
+
+### 4️⃣ Prompt-Level Constraints
+The LLM is instructed with a **strict system prompt**:
+- Answer **only** from provided context  
+- Do **not infer or speculate**  
+- Refuse if the answer is not present  
+
+This acts as a **second-layer guardrail** on top of retrieval.
+
+---
+
+### 5️⃣ No External Knowledge Leakage
+- The Streamlit UI is a **thin client**
+- All reasoning happens in the FastAPI backend
+- Users cannot inject external context or bypass retrieval
+
+---
+
+### 6️⃣ Deterministic & Explainable Output
+- Chunk IDs are preserved end-to-end
+- Every answer can be manually verified against the original filing
+- Designed for **compliance-focused and audit-friendly use cases**
+
 
 ---
 
@@ -54,18 +122,21 @@ https://www.kaggle.com/datasets/kharanshuvalangar/sec-filings
 
 | Aspect | Typical Submissions | FINWISER.AI |
 |------|---------------------|-------------|
-| Dataset Usage | Index everything blindly | Curated, high-quality subset |
-| Answers | LLM guesses | Grounded with citations |
-| Architecture | Notebook demo | Production-style FastAPI |
-| Vector DB | Local-only | Cloud-grade Pinecone |
-| Reliability | Hallucinations | Safe refusal enforced |
+| Dataset usage | Full dump | Curated subset |
+| Answers | Ungrounded LLM | Retrieval-grounded |
+| Citations | Missing | Chunk-level |
+| Backend | Notebook demo | FastAPI service |
+| Safety | Hallucinations | Explicit refusal |
+| UI | Optional | Thin API client |
 
 ---
 
 ## 🧩 High-Level Architecture
+
+```
 User Question
 ↓
-(Optional) Streamlit UI
+Streamlit UI (frontend)
 ↓
 FastAPI Backend (/ask)
 ↓
@@ -73,12 +144,12 @@ Embedding Model
 ↓
 Pinecone Vector Search
 ↓
-Relevant Filing Chunks
+Relevant SEC Chunks
 ↓
-LLM (Answer Generation)
+LLM Answer Generation
 ↓
 Answer + Citations
-
+```
 
 ---
 
@@ -88,128 +159,113 @@ Answer + Citations
 - **Python 3.10+**
 - **FastAPI** – backend API
 - **Pinecone** – vector database
-- **Sentence-Transformers** – embeddings (offline-safe)
-- **OpenAI / LLM API** – answer generation
-- **LangChain (conceptual RAG flow)**
+- **Sentence-Transformers** – embeddings
+- **OpenAI API** – answer generation
 
 ### Data & Processing
 - `requests`
-- `unstructured`
 - `pandas`
+- `unstructured`
 
-### Optional UI
-- **Streamlit**
+### Frontend
+- **Streamlit** (API consumer only)
 
 ---
 
 ## 📂 Final Folder Structure
-```
+````
 58_BHARGAVI_NAGULAPALLY/
 │
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── run.py
+├── .env
+├── app.py # Streamlit UI (API client)
+├── test_rag.py # Local RAG testing
 │
 ├── data/
-│   ├── sec_metadata.csv        # Kaggle dataset 
-│   └── filings_text/           # Downloaded SEC filings text (generated, ignored)
-│
-├── notebooks/
-│   ├── 01_dataset_exploration.ipynb
-│   ├── 02_chunking_validation.ipynb
-│   └── 03_rag_testing.ipynb
+│ ├── sec_filings.csv # Kaggle metadata
+│ └── filings_text/ # Downloaded filing text (generated)
 │
 ├── src/
-│   ├── __init__.py
-│
-│   ├── config/
-│   │   ├── settings.py
-│   │   └── prompts.py
-│
-│   ├── ingestion/
-│   │   └── fetch_filings.py
-│
-│   ├── preprocessing/
-│   │   └── chunking.py
-│
-│   ├── rag/
-│   │   ├── embeddings.py
-│   │   ├── vector_store.py
-│   │   └── retriever.py
-│
-│   ├── agents/
-│   │   ├── qa_agent.py
-│   │   └── verifier_agent.py
-│
-│   ├── pipeline/
-│   │   └── rag_pipeline.py
-│
-│   └── api/
-│       └── app.py
-│
-├── streamlit_app/
-│   └── app.py
-│
-├── eval/
-│   ├── evaluation_notes.md
-│   └── sample_outputs.md
+│ ├── agents/
+│ │ └── qa_agent.py
+│ │
+│ ├── api/
+│ │ └── main.py # FastAPI app (/ask)
+│ │
+│ ├── ingestion/
+│ │ └── fetch_filings.py
+│ │
+│ ├── preprocessing/
+│ │ └── chunking.py
+│ │
+│ ├── rag/
+│ │ ├── embeddings.py
+│ │ ├── vector_store.py
+│ │ ├── retriever.py
+│ │ └── test.py
+│ │
+│ └── pipeline/
+│ └── rag_pipeline.py
 │
 └── logs/
-    └── app.log
-
-```
-
+````
 ---
 
 ## 📥 Data Flow Explained
 
 ### 1️⃣ Input Data
-- **`sec_metadata.csv`**  
-  From Kaggle (input file)
-- Contains filing URLs, company info, form types
+- **`sec_filings.csv`**  
+  Metadata file from Kaggle containing filing URLs and company details.
 
 ### 2️⃣ Generated Data
 - **`filings_text/`**  
-  Downloaded SEC filings (output of ingestion step)
+  SEC filing text downloaded via ingestion script.
 
-> ⚠️ `filings_text/` is **generated**, not manually added.
+> ⚠️ `filings_text/` is generated and excluded from version control.
 
 ---
 
-## 🔎 RAG Workflow (Core Logic)
+## 🔎 RAG Workflow
 
 ### Indexing Phase
 1. Load metadata
-2. Select 3–5 companies
-3. Download filings
-4. Chunk text (800 tokens, 100overlaps)
+2. Select a small set of companies
+3. Download SEC filings
+4. Chunk text (800 tokens, 100 overlap)
 5. Generate embeddings
 6. Store vectors in Pinecone
 
 ### Question Phase
-1. User asks question
-2. Embed question
-3. Retrieve top-k chunks
-4. Generate answer using context only
-5. Attach chunk-level citations
+1. User submits question
+2. Embed the question
+3. Retrieve top-k relevant chunks
+4. Generate answer using retrieved context only
+5. Attach citations
 
 ---
 
-## 🧪 Example Output
+## 🧪 Example API Output
 
 ```json
 {
-  "answer": "Apple reported supply chain disruptions and regulatory risks.",
+  "answer": "The plan provides outside directors with stock-based compensation aligned with shareholder interests.",
   "sources": [
-    "AAPL_10K_2023_12",
-    "AAPL_10K_2023_18"
+    "BKH_10-K_2009-03-02_4",
+    "BKH_10-K_2009-03-02_2"
   ]
 }
 ```
+# 🖥️ Running the Project
+Start Backend
+````
+uvicorn src.api.main:app --reload
+````
+Start Frontend
+````
+streamlit run app.py
+````
+# 🏁 One-Line Summary
 
-
-🏁 One-Line Summary
-
-FINWISER.AI is a production-grade RAG system that enables investors to query SEC filings and receive accurate, citation-backed answers through a FastAPI-powered backend.
-
+FINWISER.AI is a production-style RAG system that enables investors to ask questions over SEC filings and receive accurate, citation-backed answers through a FastAPI backend and Streamlit demo UI.
