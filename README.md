@@ -1,12 +1,7 @@
-# FINWISER.AI — SEC Filing Q&A (RAG)
+# FINWISER.AI —  SEC Filing Summarizer & Q&A  using RAG
 
-**Hackathon Track:** F7 – SEC Filing Summarizer & Q&A  
-**Team:** 58_BHARGAVI_NAGULAPALLY  
-**Repository Type:** Production-style AI system  
 
----
-
-## 📌 Problem Statement (F7)
+## 📌 Problem Statement
 
 **Problem:**  
 Enable users to query **SEC 10-K / 10-Q filings** and receive **investor-focused answers** that are:
